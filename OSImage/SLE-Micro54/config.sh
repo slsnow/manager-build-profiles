@@ -171,7 +171,7 @@ fi
 if rpm -q --whatprovides jeos-firstboot >/dev/null; then
         mkdir -p /var/lib/YaST2
         touch /var/lib/YaST2/reconfig_system
-        systemctl enable jeos-firstboot.service
+        #systemctl enable jeos-firstboot.service
 fi
 
 # The %post script can't edit /etc/fstab sys due to https://github.com/OSInside/kiwi/issues/945
@@ -286,6 +286,69 @@ EOF
         chmod 0600 /home/vagrant/.ssh/authorized_keys
         chown -R vagrant /home/vagrant
 fi
+
+#=====================================
+# Set SSH Key for consulting0
+#-------------------------------------
+
+mkdir -p /root/.ssh/
+cat > /root/.ssh/authorized_keys << EOF
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCzIv71Pxs3BtYcuB9NXGNF4r+3QJOUiRmcX6YkFXWtJCBBfDrym3K/bHMvbi9i1DlCdZQKbxo7E++snZxoOMy2zcIbdKb31x4Q0X9s6LOV0m3ONC9Yy+vjd7+YLhfnYjW91Y0/2CCFp8Aw0iwPPBpdzdyibgQnccDJV1cRhRaBoRYHlAzNPg1gw5iYKX4mVXfT1bUbWCpKQRPJ8adTIO1dDgx8O/kXYiUgAt3VUY/VQ/4MfKREfI3ld469t+dufXUQaYvcp27wS8NRY9CGaNBRdEyVN8SpoQoaLgAEZR+11k7lwPmn5PZnyKVqxiMiQAe9MqQCAk3fAnfRtrnB8LAhrIjJ5J7bGGEYuRNDFKvI33L+22aZWZhJTU9WlMt1nMMypFRn0/FBcJZNCmRUZcdxTnaoKyFIi7oSI9rc84In7l0xgq9gh80Hr8yEBV6dAKKqo7C4CicCycqAJdoiX7zMmbTR+ZRaLy5fjm5/evjS2jq6txoxjZ/SB93YJFYTSEc= root@consulting0
+EOF
+
+#=====================================
+# SLSNOW
+# Append SUMA entry to /etc/hosts
+#-------------------------------------
+echo "192.168.50.78  sumaserver1.labs.suse.com   sumaserver1" >> /etc/hosts
+
+#=====================================
+# SLSNOW
+# Set venv-minion susemanager.conf file
+#-------------------------------------
+
+cat > /etc/venv-salt-minion/minion.d/susemanager.conf << EOF
+master: sumaserver1.labs.suse.com
+server_id_use_crc: adler32
+enable_legacy_startup_events: False
+enable_fqdns_grains: False
+
+grains:
+    susemanager:
+        activation_key: 1-slem54
+
+EOF
+
+#=====================================
+# SLSNOW
+# Set auto-accept grain
+#-------------------------------------
+
+cat > /etc/venv-salt-minion/minion.d/autosign-grains.conf << EOF
+# create the grain
+grains:
+    autosign_key: password123
+
+# send the grain as part of auth request
+autosign_grains:
+    - autosign_key 
+
+EOF
+
+#=====================================
+# SLSNOW
+# Set venv-salt-minion to enabled now
+#-------------------------------------
+systemctl enable venv-salt-minion
+
+#=====================================
+# SLSNOW
+# Set Passwd and locale (can do this via ignition if needed)
+#-------------------------------------
+
+sh -c 'echo root:linux | chpasswd'
+
+
 
 # Not compatible with set -e
 baseCleanMount || true
