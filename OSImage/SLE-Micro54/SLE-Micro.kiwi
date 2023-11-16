@@ -445,7 +445,7 @@
             filesystem="btrfs"
             bootloader="grub2"
             bootloader_console="gfxterm"
-	    boottimeout="3"
+	        boottimeout="3"
             firmware="uefi"
             kernelcmdline="console=ttyS0,115200 console=tty0 security=selinux selinux=1 quiet net.ifnames=0 \$ignition_firstboot ignition.platform.id=qemu"
             bootpartition="false"
@@ -454,7 +454,11 @@
             btrfs_root_is_snapshot="true"
             btrfs_root_is_readonly_snapshot="true"
             btrfs_quota_groups="true"
-            spare_part="5G" spare_part_mountpoint="/var" spare_part_fs="btrfs" spare_part_is_last="true" spare_part_fs_attributes="no-copy-on-write"
+            spare_part="5G" 
+            spare_part_mountpoint="/var" 
+            spare_part_fs="btrfs"
+            spare_part_is_last="true" 
+            spare_part_fs_attributes="no-copy-on-write"
         >
             <systemdisk>
                 <volume name="home"/>
@@ -480,6 +484,7 @@
 
     <packages type="image" profiles="full">
     <package name="venv-salt-minion"/>
+    <package name="elemental-register"/>
     <!--
         <namedCollection name="microos-salt_minion"/>
 	<package name="patterns-microos-salt_minion"/>
